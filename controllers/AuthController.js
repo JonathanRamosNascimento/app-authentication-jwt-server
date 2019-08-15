@@ -22,6 +22,19 @@ module.exports = {
     },
 
     login: function (req, res) {
+        const password = req.body.password;
+        const email = req.body.email;
+        UserModel.findOne({ email: email }).lean().exec(function (err, user) {
+            if (err) {
+                return res.status(500).json({ message: 'Server error', error: err });
+            }
+            const auth_error = (password == '' || password == null || !user);
 
-    }
+            if (!auth_error) {
+                bcrypt.compareSync(password, user.password);
+            }
+            return res.status(404).json({ message: 'Wrong e-mail or passaword' });
+        }
+        })
+}
 }
