@@ -1,6 +1,7 @@
 const UserModel = require('../models/UserModel');
 const bcrypt = require('bcryptjs');
 const consts = require('../consts');
+const jwt = require('jsonwebtoken');
 
 
 module.exports = {
@@ -31,10 +32,14 @@ module.exports = {
             const auth_error = (password == '' || password == null || !user);
 
             if (!auth_error) {
-                bcrypt.compareSync(password, user.password);
+                if (bcrypt.compareSync(password, user.password)) {
+                    let token = jwt.sign({ _id: user._id }, consts.keyJWT, { expiresIn: consts.expiresJWT });
+                    delete user.password;
+                    return res.json({...user, token: token });
+                }
             }
             return res.status(404).json({ message: 'Wrong e-mail or passaword' });
-        }
+
         })
-}
+    }
 }
